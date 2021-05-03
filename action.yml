@@ -20,7 +20,8 @@ inputs:
     required: false
   return_app_token:
     description: Sets app_token as an output if set to "true"
-    default: false
+    default: "false"
+    required: false
 outputs:
   app_token:
     description: transient token generated if a Github app was supplied
