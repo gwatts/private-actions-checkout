@@ -19,11 +19,11 @@ inputs:
     description: The app private key to authenticate with a GitHub app
     required: false
   return_app_token:
-    description: Sets app_token as an output if set to "true"
+    description: Sets app-token as an output if set to "true"
     default: "false"
     required: false
 outputs:
-  app_token:
+  app-token:
     description: transient token generated if a Github app was supplied
 runs:
   using: "node12"
