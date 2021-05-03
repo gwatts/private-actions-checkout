@@ -11738,11 +11738,13 @@ const run = async () => {
         setFailed('App > App token generation failed. Workflow can not continue')
         return
       }
-      if (returnAppToken == 'true') {
-        setOutput('app_token', appToken);
-        setSecret(appToken);
+      if (returnAppToken === 'true') {
+        info('App > Returning app-token')
+        setOutput('app-token', appToken)
+        setSecret(appToken)
+      } else {
+        info('App > Not returning app-token: ' + returnAppToken)
       }
-
     } else if (hasValue(sshPrivateKey)) {
       cloneStrategy = CLONE_STRATEGY_SSH
       info('SSH > Cloning using SSH strategy')
