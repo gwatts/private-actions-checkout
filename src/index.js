@@ -2,7 +2,9 @@ const {
   error,
   getInput,
   info,
-  setFailed
+  setFailed,
+  setOutput,
+  setSecret
 } = require('@actions/core')
 const {
   sshSetup,
@@ -28,6 +30,7 @@ const run = async () => {
     const basePath = getInput('checkout_base_path')
     const appId = getInput('app_id')
     const privateKey = getInput('app_private_key')
+    const returnAppToken = getInput('return_app_token')
 
     let cloneStrategy
     let appToken
@@ -37,10 +40,15 @@ const run = async () => {
       cloneStrategy = CLONE_STRATEGY_APP
       info('App > Cloning using GitHub App strategy')
       appToken = await obtainAppToken(appId, privateKey)
-      if(!appToken) {
+      if (!appToken) {
         setFailed('App > App token generation failed. Workflow can not continue')
         return
       }
+      if (return_app_token == 'true') {
+        setOutput('app_token', appToken);
+        setSecret(appToken);
+      }
+
     } else if (hasValue(sshPrivateKey)) {
       cloneStrategy = CLONE_STRATEGY_SSH
       info('SSH > Cloning using SSH strategy')
