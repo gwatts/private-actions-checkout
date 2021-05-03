@@ -11738,7 +11738,7 @@ const run = async () => {
         setFailed('App > App token generation failed. Workflow can not continue')
         return
       }
-      if (return_app_token == 'true') {
+      if (returnAppToken == 'true') {
         setOutput('app_token', appToken);
         setSecret(appToken);
       }
