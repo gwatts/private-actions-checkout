@@ -18,7 +18,7 @@ inputs:
   app_private_key:
     description: The app private key to authenticate with a GitHub app
     required: false
-  return_app-token:
+  return_app_token:
     description: Sets app_token as an output if set to "true"
     default: "false"
     required: false
