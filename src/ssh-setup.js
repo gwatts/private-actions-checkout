@@ -22,6 +22,7 @@ const sshAgentStart = (exportEnv) => {
     const matches = /^(SSH_AUTH_SOCK|SSH_AGENT_PID)=(.*); export \1/.exec(lines[lineNumber])
     if (matches && matches.length > 0) {
       process.env[matches[1]] = matches[2]
+      info(`SSH > Set ${matches[1]} = ${matches[2]}`)
       if (exportEnv) {
         exportVariable(matches[1], matches[2])
         info(`SSH > Exporting ${matches[1]} = ${matches[2]}`)
