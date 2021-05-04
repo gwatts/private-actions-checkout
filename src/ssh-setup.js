@@ -43,8 +43,8 @@ const addPrivateKey = (privateKey) => {
 
 const sshSetup = (privateKey, exportEnv) => {
   sshHomeSetup()
-  sshAgentStart()
-  addPrivateKey(privateKey, exportEnv)
+  sshAgentStart(exportEnv)
+  addPrivateKey(privateKey)
 }
 
 const configureSSHGit = () => {
