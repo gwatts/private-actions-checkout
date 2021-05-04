@@ -24,6 +24,7 @@ const sshAgentStart = (exportEnv) => {
       process.env[matches[1]] = matches[2]
       if (exportEnv) {
         exportVariable(matches[1], matches[2])
+        info(`SSH > Exporting ${matches[1]} = ${matches[2]}`)
       }
     }
   }
