@@ -9,11 +9,13 @@ const {
 const {
   sshSetup,
   cloneWithSSH,
-  cleanupSSH
+  cleanupSSH,
+  configureSSHGit
 } = require('./ssh-setup')
 const {
   obtainAppToken,
-  cloneWithApp
+  cloneWithApp,
+  configureAppGit
 } = require('./github-app-setup')
 
 const hasValue = (input) => {
@@ -30,7 +32,8 @@ const run = async () => {
     const basePath = getInput('checkout_base_path')
     const appId = getInput('app_id')
     const privateKey = getInput('app_private_key')
-    const returnAppToken = getInput('return_app_token')
+    const returnAppToken = getInput('return_app_token') === 'true'
+    const configGit = getInput('configure_git') === 'true'
 
     let cloneStrategy
     let appToken
@@ -44,18 +47,18 @@ const run = async () => {
         setFailed('App > App token generation failed. Workflow can not continue')
         return
       }
-      if (returnAppToken === 'true') {
+      if (returnAppToken) {
         info('App > Returning app-token')
         setOutput('app-token', appToken)
         setSecret(appToken)
       } else {
-        info('App > Not returning app-token: ' + returnAppToken)
+        info('App > Not returning app-token')
       }
     } else if (hasValue(sshPrivateKey)) {
       cloneStrategy = CLONE_STRATEGY_SSH
       info('SSH > Cloning using SSH strategy')
       info('SSH > Setting up the SSH agent with the provided private key')
-      sshSetup(sshPrivateKey)
+      sshSetup(sshPrivateKey, configGit)
     } else {
       cloneStrategy = CLONE_STRATEGY_SSH
       info('SSH > Cloning using SSH strategy')
@@ -71,9 +74,17 @@ const run = async () => {
       }
     })
 
-    // Cleanup
-    if (cloneStrategy === CLONE_STRATEGY_SSH && hasValue(sshPrivateKey)) {
-      cleanupSSH()
+    if (configGit) {
+      if (cloneStrategy === CLONE_STRATEGY_APP) {
+        configureAppGit(appToken)
+      } else {
+        configureSSHGit()
+      }
+    } else {
+      // Cleanup
+      if (cloneStrategy === CLONE_STRATEGY_SSH && hasValue(sshPrivateKey)) {
+        cleanupSSH()
+      }
     }
   } catch (e) {
     error(e)

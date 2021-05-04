@@ -1,7 +1,8 @@
 const { execFileSync, execSync } = require('child_process')
 const fs = require('fs')
 const {
-  info
+  info,
+  exportVariable
 } = require('@actions/core')
 
 const { convertActionToCloneCommand } = require('./action-parser')
@@ -13,7 +14,7 @@ const sshHomeSetup = () => {
   execSync(`ssh-keyscan -H github.com >> ${sshHomePath}/known_hosts`)
 }
 
-const sshAgentStart = () => {
+const sshAgentStart = (exportEnv) => {
   info('SSH > Starting the SSH agent')
   const sshAgentOutput = execFileSync('ssh-agent')
   const lines = sshAgentOutput.toString().split('\n')
@@ -21,6 +22,9 @@ const sshAgentStart = () => {
     const matches = /^(SSH_AUTH_SOCK|SSH_AGENT_PID)=(.*); export \1/.exec(lines[lineNumber])
     if (matches && matches.length > 0) {
       process.env[matches[1]] = matches[2]
+      if (exportEnv) {
+        exportVariable(matches[1], matches[2])
+      }
     }
   }
 }
@@ -33,10 +37,16 @@ const addPrivateKey = (privateKey) => {
   execSync('ssh-add -l', { stdio: 'inherit' })
 }
 
-const sshSetup = (privateKey) => {
+const sshSetup = (privateKey, exportEnv) => {
   sshHomeSetup()
   sshAgentStart()
-  addPrivateKey(privateKey)
+  addPrivateKey(privateKey, exportEnv)
+}
+
+const configureSSHGit = () => {
+  const command = 'git config --global url."ssh://git@github.com/".insteadOf "https://github.com/"'
+  info(`App > ${command}`)
+  execSync(command)
 }
 
 const cloneWithSSH = (basePath, action) => {
@@ -56,5 +66,6 @@ const cleanupSSH = () => {
 module.exports = {
   sshSetup,
   cloneWithSSH,
-  cleanupSSH
+  cleanupSSH,
+  configureSSHGit
 }

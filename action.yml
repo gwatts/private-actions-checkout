@@ -20,7 +20,9 @@ inputs:
     required: false
   return_app_token:
     description: Sets app-token as an output if set to "true"
-    default: "false"
+    required: false
+  configure_git:
+    description: Configures git to continue to use the ssh key or app token after the action exits if set to "true"
     required: false
 outputs:
   app-token:
@@ -28,6 +30,7 @@ outputs:
 runs:
   using: "node12"
   main: "dist/index.js"
+  cleanup: "dist/cleanup.js"
 branding:
   icon: 'download-cloud'
   color: 'yellow'

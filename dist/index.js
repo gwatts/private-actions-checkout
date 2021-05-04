@@ -11673,6 +11673,12 @@ async function obtainAppToken (id, privateKeyInput) {
   }
 }
 
+const configureAppGit = (token) => {
+  const command = `git config --global url."https://x-access-token:${token}@github.com".insteadOf "https://github.com/"`
+  info(`App > ${command}`)
+  execSync(command)
+}
+
 const cloneWithApp = (basePath, action, token) => {
   const command = convertActionToCloneCommand(basePath, action, (params) =>
     `https://x-access-token:${token}@github.com/${params.owner}/${params.repo}.git`
@@ -11683,7 +11689,8 @@ const cloneWithApp = (basePath, action, token) => {
 
 module.exports = {
   obtainAppToken,
-  cloneWithApp
+  cloneWithApp,
+  configureAppGit
 }
 
 
@@ -11703,11 +11710,13 @@ const {
 const {
   sshSetup,
   cloneWithSSH,
-  cleanupSSH
+  cleanupSSH,
+  configureSSHGit
 } = __webpack_require__(1368)
 const {
   obtainAppToken,
-  cloneWithApp
+  cloneWithApp,
+  configureAppGit
 } = __webpack_require__(9187)
 
 const hasValue = (input) => {
@@ -11724,7 +11733,8 @@ const run = async () => {
     const basePath = getInput('checkout_base_path')
     const appId = getInput('app_id')
     const privateKey = getInput('app_private_key')
-    const returnAppToken = getInput('return_app_token')
+    const returnAppToken = getInput('return_app_token') === 'true'
+    const configGit = getInput('configure_git') === 'true'
 
     let cloneStrategy
     let appToken
@@ -11738,18 +11748,18 @@ const run = async () => {
         setFailed('App > App token generation failed. Workflow can not continue')
         return
       }
-      if (returnAppToken === 'true') {
+      if (returnAppToken) {
         info('App > Returning app-token')
         setOutput('app-token', appToken)
         setSecret(appToken)
       } else {
-        info('App > Not returning app-token: ' + returnAppToken)
+        info('App > Not returning app-token')
       }
     } else if (hasValue(sshPrivateKey)) {
       cloneStrategy = CLONE_STRATEGY_SSH
       info('SSH > Cloning using SSH strategy')
       info('SSH > Setting up the SSH agent with the provided private key')
-      sshSetup(sshPrivateKey)
+      sshSetup(sshPrivateKey, configGit)
     } else {
       cloneStrategy = CLONE_STRATEGY_SSH
       info('SSH > Cloning using SSH strategy')
@@ -11765,9 +11775,17 @@ const run = async () => {
       }
     })
 
-    // Cleanup
-    if (cloneStrategy === CLONE_STRATEGY_SSH && hasValue(sshPrivateKey)) {
-      cleanupSSH()
+    if (configGit) {
+      if (cloneStrategy === CLONE_STRATEGY_APP) {
+        configureAppGit(appToken)
+      } else {
+        configureSSHGit()
+      }
+    } else {
+      // Cleanup
+      if (cloneStrategy === CLONE_STRATEGY_SSH && hasValue(sshPrivateKey)) {
+        cleanupSSH()
+      }
     }
   } catch (e) {
     error(e)
@@ -11786,7 +11804,8 @@ run()
 const { execFileSync, execSync } = __webpack_require__(3129)
 const fs = __webpack_require__(5747)
 const {
-  info
+  info,
+  exportVariable
 } = __webpack_require__(2186)
 
 const { convertActionToCloneCommand } = __webpack_require__(2759)
@@ -11798,7 +11817,7 @@ const sshHomeSetup = () => {
   execSync(`ssh-keyscan -H github.com >> ${sshHomePath}/known_hosts`)
 }
 
-const sshAgentStart = () => {
+const sshAgentStart = (exportEnv) => {
   info('SSH > Starting the SSH agent')
   const sshAgentOutput = execFileSync('ssh-agent')
   const lines = sshAgentOutput.toString().split('\n')
@@ -11806,6 +11825,9 @@ const sshAgentStart = () => {
     const matches = /^(SSH_AUTH_SOCK|SSH_AGENT_PID)=(.*); export \1/.exec(lines[lineNumber])
     if (matches && matches.length > 0) {
       process.env[matches[1]] = matches[2]
+      if (exportEnv) {
+        exportVariable(matches[1], matches[2])
+      }
     }
   }
 }
@@ -11818,10 +11840,16 @@ const addPrivateKey = (privateKey) => {
   execSync('ssh-add -l', { stdio: 'inherit' })
 }
 
-const sshSetup = (privateKey) => {
+const sshSetup = (privateKey, exportEnv) => {
   sshHomeSetup()
   sshAgentStart()
-  addPrivateKey(privateKey)
+  addPrivateKey(privateKey, exportEnv)
+}
+
+const configureSSHGit = () => {
+  const command = 'git config --global url."ssh://git@github.com/".insteadOf "https://github.com/"'
+  info(`App > ${command}`)
+  execSync(command)
 }
 
 const cloneWithSSH = (basePath, action) => {
@@ -11841,7 +11869,8 @@ const cleanupSSH = () => {
 module.exports = {
   sshSetup,
   cloneWithSSH,
-  cleanupSSH
+  cleanupSSH,
+  configureSSHGit
 }
 
 
