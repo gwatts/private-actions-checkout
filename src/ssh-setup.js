@@ -16,6 +16,7 @@ const sshHomeSetup = () => {
 
 const sshAgentStart = (exportEnv) => {
   info('SSH > Starting the SSH agent')
+  info(`SSH -> exportEnv=${exportEnv}`)
   const sshAgentOutput = execFileSync('ssh-agent')
   const lines = sshAgentOutput.toString().split('\n')
   for (const lineNumber in lines) {

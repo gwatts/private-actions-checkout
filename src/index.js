@@ -35,6 +35,7 @@ const run = async () => {
     const returnAppToken = getInput('return_app_token') === 'true'
     const configGit = getInput('configure_git') === 'true'
 
+    info(`SETUP > configGit=${configGit}`)
     let cloneStrategy
     let appToken
 

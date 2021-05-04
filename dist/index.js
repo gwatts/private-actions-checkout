@@ -11736,6 +11736,7 @@ const run = async () => {
     const returnAppToken = getInput('return_app_token') === 'true'
     const configGit = getInput('configure_git') === 'true'
 
+    info(`SETUP > configGit=${configGit}`)
     let cloneStrategy
     let appToken
 
@@ -11819,6 +11820,7 @@ const sshHomeSetup = () => {
 
 const sshAgentStart = (exportEnv) => {
   info('SSH > Starting the SSH agent')
+  info(`SSH -> exportEnv=${exportEnv}`)
   const sshAgentOutput = execFileSync('ssh-agent')
   const lines = sshAgentOutput.toString().split('\n')
   for (const lineNumber in lines) {
