@@ -35,7 +35,6 @@ const run = async () => {
     const returnAppToken = getInput('return_app_token') === 'true'
     const configGit = getInput('configure_git') === 'true'
 
-    info(`SETUP > configGit=${configGit}`)
     let cloneStrategy
     let appToken
 
@@ -51,9 +50,6 @@ const run = async () => {
       if (returnAppToken) {
         info('App > Returning app-token')
         setOutput('app-token', appToken)
-        setSecret(appToken)
-      } else {
-        info('App > Not returning app-token')
       }
     } else if (hasValue(sshPrivateKey)) {
       cloneStrategy = CLONE_STRATEGY_SSH

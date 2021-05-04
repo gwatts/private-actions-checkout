@@ -11736,7 +11736,6 @@ const run = async () => {
     const returnAppToken = getInput('return_app_token') === 'true'
     const configGit = getInput('configure_git') === 'true'
 
-    info(`SETUP > configGit=${configGit}`)
     let cloneStrategy
     let appToken
 
@@ -11752,9 +11751,6 @@ const run = async () => {
       if (returnAppToken) {
         info('App > Returning app-token')
         setOutput('app-token', appToken)
-        setSecret(appToken)
-      } else {
-        info('App > Not returning app-token')
       }
     } else if (hasValue(sshPrivateKey)) {
       cloneStrategy = CLONE_STRATEGY_SSH
@@ -11820,18 +11816,15 @@ const sshHomeSetup = () => {
 
 const sshAgentStart = (exportEnv) => {
   info('SSH > Starting the SSH agent')
-  info(`SSH -> exportEnv=${exportEnv}`)
   const sshAgentOutput = execFileSync('ssh-agent')
   const lines = sshAgentOutput.toString().split('\n')
   for (const lineNumber in lines) {
-    info(`SSH lineNumer=${lineNumber} - ${lines[lineNumber]}`)
     const matches = /^(SSH_AUTH_SOCK|SSH_AGENT_PID)=(.*); export \1/.exec(lines[lineNumber])
     if (matches && matches.length > 0) {
       process.env[matches[1]] = matches[2]
-      info(`SSH > Set ${matches[1]} = ${matches[2]}`)
       if (exportEnv) {
         exportVariable(matches[1], matches[2])
-        info(`SSH > Exporting ${matches[1]} = ${matches[2]}`)
+        info(`SSH > Export ${matches[1]} = ${matches[2]}`)
       }
     }
   }
