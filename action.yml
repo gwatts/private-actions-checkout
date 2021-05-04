@@ -30,7 +30,6 @@ outputs:
 runs:
   using: "node12"
   main: "dist/index.js"
-  cleanup: "dist/cleanup.js"
 branding:
   icon: 'download-cloud'
   color: 'yellow'
