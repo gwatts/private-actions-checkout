@@ -11674,7 +11674,7 @@ async function obtainAppToken (id, privateKeyInput) {
 }
 
 const configureAppGit = (token) => {
-  const command = `git config --global url."https://x-access-token:${token}@github.com".insteadOf "https://github.com/"`
+  const command = `git config --global url."https://x-access-token:${token}@github.com/".insteadOf "https://github.com/"`
   info(`App > ${command}`)
   execSync(command)
 }
